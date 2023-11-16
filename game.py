@@ -1,4 +1,4 @@
-
+import time
 import globals as g
 from ball import Ball
 from score_panel import ScorePanel
@@ -31,6 +31,7 @@ class Game:
 
     def is_ball_missed(self, which_side):
         if abs(which_side - self.ball.xcor()) < 10:
+            time.sleep(0.1)
             self.ball.recenter()
             return True
         return False
