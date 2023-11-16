@@ -1,6 +1,5 @@
 
-import turtle
-import time
+from turtle import Turtle, Screen
 import random as r
 
 
@@ -22,7 +21,7 @@ LEFT = 180
 RIGHT = 0
 
 
-class Ball(turtle.Turtle):
+class Ball(Turtle):
     def __init__(self):
         super().__init__()
         self.shape("circle")
@@ -50,7 +49,7 @@ class Ball(turtle.Turtle):
         self.setheading(r.randint(0, 15))
 
 
-class ScorePanel(turtle.Turtle):
+class ScorePanel(Turtle):
     def __init__(self, pos):
         super().__init__()
         self.hideturtle()
@@ -63,23 +62,23 @@ class ScorePanel(turtle.Turtle):
         self.write_score(0)
 
     def write_score(self, score):
-        score = str(score)
         self.clear()
-        self.write(score, align="center", font=("Courier", 50, "bold"))
+        self.write(str(score), align="center", font=("Courier", 50, "bold"))
 
 
 class PlayGround:
     def __init__(self):
-        self.screen = turtle.Screen()
+        self.screen = Screen()
+        self.screen.tracer(0)
         self.screen.bgcolor(THEME_COLOR[0])
         self.screen.setup(SCREEN_WIDTH, SCREEN_HEIGHT)
         self.screen.title("Pong")
-        self.screen.tracer(0)
+
         self._create_dash_line()
         self.usr_input = STILL
 
     def _create_dash_line(self):
-        dash_line = turtle.Turtle()
+        dash_line = Turtle()
         dash_line.pensize(5)
         dash_line.hideturtle()
         dash_line.goto(0, SCREEN_HEIGHT/2)
@@ -90,17 +89,6 @@ class PlayGround:
             dash_line.color(THEME_COLOR[1])
             dash_line.forward(10)
             dash_line.color(THEME_COLOR[0])
-
-    def _create_score_panel(self, pos):
-        score_panel = turtle.Turtle()
-        score_panel.hideturtle()
-        score_panel.color(THEME_COLOR[1])
-        score_panel.penup()
-        if pos == LEFT:
-            score_panel.goto(-50, SCREEN_HEIGHT/2 - 80)
-        else:
-            score_panel.goto(50, SCREEN_HEIGHT/2 - 80)
-        return score_panel
 
     def exit_on_click(self):
         self.screen.exitonclick()
@@ -128,12 +116,12 @@ class PlayGround:
 
 class Paddle:
     def __init__(self, loc) -> None:
-        self.paddle: list[turtle.Turtle] = []
+        self.paddle: list[Turtle] = []
         self._create_paddle_parts(PADDLE_SIZE, loc)
 
     def _create_paddle_parts(self, num_parts, location):
 
-        part = turtle.Turtle("square")
+        part = Turtle("square")
         part.penup()
         if location == RIGHT:
             part.goto(SCREEN_WIDTH/2 - 50, 0)
@@ -188,18 +176,6 @@ class Game:
 
         self.play_ground.refresh()
 
-    def comp_think(self):
-        if self.ball.xcor() < -1*SCREEN_WIDTH/4 and \
-                is_between(self.ball.heading(), 90, 270):
-            self.comp_paddle.sety(self.ball.ycor())
-        else:
-            # stand do nothing
-            pass
-
-    def handle_upper_wall(self):
-        if (abs(SCREEN_HEIGHT/2) - abs(self.ball.ycor())) < 10:
-            self.ball.bounce()
-
     def is_paddle_hit(self, a_paddle):
         xb, yb = self.ball.position()
         (x, ymax, ymin) = a_paddle.get_position()
@@ -208,31 +184,45 @@ class Game:
             return True
         return False
 
-    def is_ball_miss(self, which_side):
+    def is_ball_missed(self, which_side):
         if abs(which_side - self.ball.xcor()) < 10:
             self.ball.recenter()
             return True
         return False
 
-    def _make_step(self):
+    def comp_react(self):
+        if self.ball.xcor() < -1*SCREEN_WIDTH/4 and \
+                is_between(self.ball.heading(), 90, 270):
+            self.comp_paddle.sety(self.ball.ycor())
+        else:
+            # stand do nothing
+            pass
 
+    def usr_react(self):
         if self.play_ground.usr_input == UP:
             self.usr_paddle.up()
         elif self.play_ground.usr_input == DOWN:
             self.usr_paddle.down()
 
-        self.comp_think()
+    def ball_react(self):
         self.ball.move()
-
-        self.handle_upper_wall()
-        if self.is_ball_miss(USER_SIDE) or \
+        # Handle Upper/lower walls collision
+        if (abs(SCREEN_HEIGHT/2) - abs(self.ball.ycor())) < 10:
+            self.ball.bounce()
+        # Handle Side walls / paddle collision
+        if self.is_ball_missed(USER_SIDE) or \
                 self.is_paddle_hit(self.comp_paddle):
             self.comp_score += 1
             self.comp_panel.write_score(self.comp_score)
-        elif self.is_ball_miss(COMP_SIDE) or  \
+        elif self.is_ball_missed(COMP_SIDE) or  \
                 self.is_paddle_hit(self.usr_paddle):
             self.usr_score += 1
             self.usr_panel.write_score(self.usr_score)
+
+    def _make_step(self):
+        self.usr_react()
+        self.comp_react()
+        self.ball_react()
 
         self.play_ground.refresh()
         self.play_ground.screen.ontimer(fun=self._make_step, t=50)
