@@ -10,11 +10,12 @@ LOWER_LIMIT = -SCREEN_HEIGHT/2
 THEME_COLOR = ["black", "white"]
 
 
-STILL = 0
 UP = 90
 DOWN = 270
 LEFT = 180
 RIGHT = 0
+CENTER = 1
+STILL = 2
 
 
 def is_between(x, num1, num2):

@@ -9,7 +9,6 @@ class PlayGround:
         self.screen.bgcolor(g.THEME_COLOR[0])
         self.screen.setup(g.SCREEN_WIDTH, g.SCREEN_HEIGHT)
         self.screen.title("Pong")
-
         self._create_dash_line()
         self.usr_input = g.STILL
 
@@ -31,6 +30,9 @@ class PlayGround:
 
     def refresh(self):
         self.screen.update()
+
+    def get_usr_input(self):
+        return self.usr_input
 
     def usr_up(self):
         self.usr_input = g.UP

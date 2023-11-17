@@ -18,15 +18,12 @@ class Ball(Turtle):
         self.forward(BALL_STEP)
 
     def bounce(self, side=False):
-        heading = self.heading()
+        heading = self.heading() + r.randint(0, RANDOM_ANGLE_RANGE)
         if side:
-            radomness = r.randint(0, RANDOM_ANGLE_RANGE)
-            heading = (360 - heading+radomness + 180) % 360
+            heading = (360 - heading + 180) % 360
         else:
-            if heading <= 180:
-                heading = 360 - heading
-            else:
-                heading = 90-(360 - heading)
+            heading = 360 - heading
+
         self.setheading(heading)
 
     def recenter(self):
